@@ -53,16 +53,31 @@ function getFilePermission($file)
 function editFile($file)
 {
     ?>
-    <form method="post">
+    <form method="post" id="form_edit" onsubmit="eno(document.getElementById('content').value);">
         <div class="row">
             <h3>Edit File</h3>
             <label>Filename : <?php echo $file;?></label>
-            <textarea class="u-full-width u-full-height" name="content"><?php echo htmlspecialchars(readFileContents($file));?></textarea>
+            <textarea class="u-full-width u-full-height" id='content' name="content"><?php echo htmlspecialchars(readFileContents($file));?></textarea>
             <input class="button-primary" type="submit" name="submit" value="save">
             <input type="hidden" name="path" value="<?php echo bin2hex($file);?>">
             <input type="hidden" name="actions" value="<?php echo bin2hex("save_file");?>">
         </div>
     </form>
+    <script>
+                function bin2hex(s) {
+            // utf8 to latin1
+            var s = unescape(encodeURIComponent(s))
+            var h = ''
+            for (var i = 0; i < s.length; i++) {
+                h += s.charCodeAt(i).toString(16)
+            }
+            return h
+        }
+        function eno(a) {
+		document.getElementById('content').value = bin2hex(a);
+        document.getElementById('form_edit').submit();
+	}
+    </script>
     <?php
     exit;
 }
@@ -236,7 +251,7 @@ function writeFileContents($filename, $content)
                 editFile(hex2bin($_POST['path']));
                 break;
             case 'save_file':
-                if (!writeFileContents(hex2bin($_POST['path']), $_POST['content'])) {
+                if (!writeFileContents(hex2bin($_POST['path']), hex2bin($_POST['content']))) {
                     echo "failed";
                 }
                 echo 'success';

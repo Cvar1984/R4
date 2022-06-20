@@ -335,9 +335,9 @@ function writeFileContents($filename, $content)
 
             if (isset($contents['dirs'])) {
                 foreach ($contents['dirs'] as $dirName) {
-                    $path = realpath($dirName);
+                    $path = getcwd();
                     $path = str_replace('\\', '/', $path);
-                    $path = $path;
+                    $path = $path . '/' . $dirName;
                     $perm = getFilePermission($path);
                     $date = fileDate($path);
                     $ownership = getOwnership($path);
@@ -355,8 +355,9 @@ function writeFileContents($filename, $content)
             }
             if (isset($contents['files'])) {
                 foreach ($contents['files'] as $fileName) {
-                    $path = realpath($fileName);
+                    $path = getcwd();
                     $path = str_replace('\\', '/', $path);
+                    $path = $path . '/' . $fileName;
                     $perm = getFilePermission($path);
                     $date = fileDate($path);
                     $ownership = getOwnership($path);

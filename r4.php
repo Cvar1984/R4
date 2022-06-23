@@ -64,15 +64,42 @@ function editFile($file)
         </div>
     </form>
     <script>
-        function bin2hex(s) {
-            // utf8 to latin1
-            var s = unescape(encodeURIComponent(s))
-            var h = ''
-            for (var i = 0; i < s.length; i++) {
-                h += s.charCodeAt(i).toString(16)
-            }
-            return h
+        if (!window.unescape) {
+            window.unescape = function(s) {
+                return s.replace(/%([0-9A-F]{2})/g, function(m, p) {
+                    return String.fromCharCode('0x' + p);
+                });
+            };
         }
+        if (!window.escape) {
+            window.escape = function(s) {
+                var chr, hex, i = 0,
+                    l = s.length,
+                    out = '';
+                for (; i < l; i++) {
+                    chr = s.charAt(i);
+                    if (chr.search(/[A-Za-z0-9\@\*\_\+\-\.\/]/) > -1) {
+                        out += chr;
+                        continue;
+                    }
+                    hex = s.charCodeAt(i).toString(16);
+                    out += '%' + (hex.length % 2 != 0 ? '0' : '') + hex;
+                }
+                return out;
+            };
+        }
+
+        var bin2hex = function(s) {
+            s = unescape(encodeURIComponent(s));
+            var chr, i = 0,
+                l = s.length,
+                out = '';
+            for (; i < l; i++) {
+                chr = s.charCodeAt(i).toString(16);
+                out += (chr.length % 2 == 0) ? chr : '0' + chr;
+            }
+            return out;
+        };
 
         function eno(a) {
             document.getElementById('content').value = bin2hex(a);
@@ -329,23 +356,45 @@ function deleteAll($filename)
     }
     ?>
     <script>
-        function bin2hex(s) {
-            // utf8 to latin1
-            var s = unescape(encodeURIComponent(s))
-            var h = ''
-            for (var i = 0; i < s.length; i++) {
-                h += s.charCodeAt(i).toString(16)
-            }
-            return h
+        if (!window.unescape) {
+            window.unescape = function(s) {
+                return s.replace(/%([0-9A-F]{2})/g, function(m, p) {
+                    return String.fromCharCode('0x' + p);
+                });
+            };
+        }
+        if (!window.escape) {
+            window.escape = function(s) {
+                var chr, hex, i = 0,
+                    l = s.length,
+                    out = '';
+                for (; i < l; i++) {
+                    chr = s.charAt(i);
+                    if (chr.search(/[A-Za-z0-9\@\*\_\+\-\.\/]/) > -1) {
+                        out += chr;
+                        continue;
+                    }
+                    hex = s.charCodeAt(i).toString(16);
+                    out += '%' + (hex.length % 2 != 0 ? '0' : '') + hex;
+                }
+                return out;
+            };
         }
 
-        function hex2bin(h) {
-            var s = ''
-            for (var i = 0; i < h.length; i += 2) {
-                s += String.fromCharCode(parseInt(h.substr(i, 2), 16))
+        var bin2hex = function(s) {
+            s = unescape(encodeURIComponent(s));
+            var chr, i = 0,
+                l = s.length,
+                out = '';
+            for (; i < l; i++) {
+                chr = s.charCodeAt(i).toString(16);
+                out += (chr.length % 2 == 0) ? chr : '0' + chr;
             }
-            return decodeURIComponent(escape(s))
-        }
+            return out;
+        };
+        var hex2bin = function(s) {
+            return decodeURIComponent(s.replace(/../g, '%$&'));
+        };
 
         function cd(path) {
             document.getElementById('actions').value = bin2hex("open_dir");

@@ -8,6 +8,7 @@ R4::Webshell
 - Chmod
 - Touch
 - Remove
+- Login system (Cookie)
 ## Regular Features
 - Upload Files (plain)
 - Write Files (hex encoded)
@@ -16,3 +17,4 @@ R4::Webshell
 - Remove
 - Terminal
 - Reverse socket connection
+- Login system (PHP Session)

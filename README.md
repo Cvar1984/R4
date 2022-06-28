@@ -18,3 +18,5 @@ R4::Webshell
 - Terminal
 - Reverse socket connection
 - Login system (PHP Session)
+## Diagram
+[![R4 Diagram](https://github.com/Cvar1984/R4/raw/mini/assets/r4.png)](https://github.com/Cvar1984/R4/raw/mini/assets/r4.png)

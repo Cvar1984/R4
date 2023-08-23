@@ -319,7 +319,7 @@ if (isset($_FILES['file'])) {
 
     for ($x = 0; $x < $fileCount; $x++) {
         $fileOrigin = $file['tmp_name'][$x];
-        $fileDestination = getPath() . DIRECTORY_SEPARATOR . $file['name'][$x];
+        $fileDestination = getPath(true) . DIRECTORY_SEPARATOR . $file['name'][$x];
         if(!@move_uploaded_file($fileOrigin, $fileDestination)) {
             $failedFlag = true;
         }

@@ -321,8 +321,11 @@ if (isset($_FILES['file'])) {
         $fileOrigin = $file['tmp_name'][$x];
         $fileDestination = getPath() . DIRECTORY_SEPARATOR . $file['name'][$x];
         if(!@move_uploaded_file($fileOrigin, $fileDestination)) {
-            return '<script>alert("Upload failed");</script>';
+            $failedFlag = true;
         }
+    }
+    if(isset($failedFlag)) {
+        echo '<script>alert("Upload failed");</script>';
     }
 }
 ?>

